@@ -27,7 +27,7 @@ PostTube
     git checkout master
     ```
 
-5. Push
+5. Push all.
 
     ```
     echo 'Hello world' > index.html
