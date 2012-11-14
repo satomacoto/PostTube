@@ -20,10 +20,10 @@ git branch gh-pages
 ```
 vim .git/hooks/post-commit 
 chmod 755 .git/hooks/post-commit
-cat .git/hooks/post-commit 
 ```
 
 ```
+cat .git/hooks/post-commit 
 #!/bin/sh
 git checkout gh-pages
 git rebase master
