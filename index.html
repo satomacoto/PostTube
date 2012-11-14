@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <title>PostTube</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script type="text/javascript">
+$(document).ready(function() {
+    $.ajax({
+        type: "GET",
+        dataType: "jsonp",
+        url: "http://post-tube.satomacoto.com/posts/random?limit=5&callback=?",
+        success: function(data) {
+            console.log(data);
+        },
+        async: true
+    });
+});
+    </script>
+</head>
+<body>
+    
+</body>
+</html>
