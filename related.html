@@ -1,0 +1,140 @@
+<html>
+<head>
+  <title></title>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <style type="text/css">
+body {
+    margin: 0;
+}
+#player {
+    margin: 0;
+    padding: 0;
+    z-index: -99;
+}
+#front {
+    width: 300px;
+    height: 300px;
+    position: absolute;
+    background: white;
+    top: 0;
+    opacity: 0.5;
+}
+  </style>
+  <script type="text/javascript">
+
+// playlist
+var playlist = [];
+var history = [];
+var now_playing = "";
+
+// IFrame Player APIを非同期にロード
+var tag = document.createElement('script');
+tag.src = "http://www.youtube.com/player_api";
+var firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+// APIをダウンロードしたら<iframe>とYouTubeプレイヤーを生成
+var player;
+function onYouTubePlayerAPIReady() {
+    player = new YT.Player('player', {
+        height: '0',
+        width: '0',
+        videoId: 'qqXMM8v9vn0',
+        events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange,
+            'onError': onPlayerError
+        },
+        playerVars: {
+            autohide: 1,
+            controls: 2,
+            wmode: 'opaque',
+            hd: 1
+        } 
+    });
+}
+
+function onPlayerReady(event) {
+    setPlayerSize();
+    updateVideos("AKB48");
+}
+
+function onPlayerStateChange(event) {
+    if (event.data == YT.PlayerState.ENDED) {
+        updateRelated(now_playing);
+    }
+}
+
+function onPlayerError(event) {
+    playNext();
+}
+
+function setPlayerSize() {
+    var w = $(window).width() / 2;
+    var h = $(window).height() / 2;
+    $('#player')
+        .attr('width', w)
+        .attr('height', h);
+    $('#front')
+        .css('width', w)
+        .css('height', h);
+}
+
+function playNext() {
+    var videoid = playlist.shift();
+    while (history.indexOf(videoid) >= 0) {
+        videoid = playlist.shift();        
+    }
+    player.loadVideoById(videoid);
+    now_playing = videoid;
+    history.push(videoid);
+}
+
+function updateRelated(videoid) {
+    $.ajax({
+        type: "GET",
+        dataType: "jsonp",
+        url: "http://gdata.youtube.com/feeds/api/videos/" + videoid + "/related?v=2&alt=json-in-script&callback=?",
+        success: function(data) {
+            playlist = [];
+            for (var i = 0; i < data.feed.entry.length; i++) {
+                // console.log(data.feed.entry[i].media$group.yt$videoid.$t);
+                playlist.push(data.feed.entry[i].media$group.yt$videoid.$t);
+            }
+            console.log(playlist);
+            playNext();
+        }
+    });
+}
+
+function updateVideos(q) {
+    //http://gdata.youtube.com/feeds/api/videos?q=AKB48&category=Music&v=2&alt=json    
+    $.ajax({
+        type: "GET",
+        dataType: "jsonp",
+        url: "http://gdata.youtube.com/feeds/api/videos?q=" + q + "&category=Music&v=2&alt=json-in-script&callback=?",
+        success: function(data) {
+            playlist = [];
+            for (var i = 0; i < data.feed.entry.length; i++) {
+                // console.log(data.feed.entry[i].media$group.yt$videoid.$t);
+                playlist.push(data.feed.entry[i].media$group.yt$videoid.$t);
+            }
+            console.log(playlist);
+            playNext();
+        }
+    });
+}
+
+$(document).ready(function() {
+    $(window).resize(function(evt) {
+        setPlayerSize();        
+    });
+})
+  </script>
+</head>
+
+<body>
+  <div id="player"></div>
+  <div id="front"></div>
+</body>
+</html>
